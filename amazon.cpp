@@ -5,12 +5,16 @@
 #include <vector>
 #include <iomanip>
 #include <algorithm>
+#include "mydatastore.h"
+#include "datastore.h"
 #include "product.h"
+#include "user.h"
 #include "db_parser.h"
 #include "product_parser.h"
 #include "util.h"
 
 using namespace std;
+
 struct ProdNameSorter {
     bool operator()(Product* p1, Product* p2) {
         return (p1->getName() < p2->getName());
@@ -29,9 +33,7 @@ int main(int argc, char* argv[])
      * Declare your derived DataStore object here replacing
      *  DataStore type to your derived type
      ****************/
-    DataStore ds;
-
-
+    MyDataStore ds;
 
     // Instantiate the individual section and product parsers we want
     ProductSectionParser* productSectionParser = new ProductSectionParser;
@@ -80,7 +82,7 @@ int main(int argc, char* argv[])
                 hits = ds.search(terms, 0);
                 displayProducts(hits);
             }
-            else if ( cmd == "OR" ) {
+            else if ( cmd == "OR") {
                 string term;
                 vector<string> terms;
                 while(ss >> term) {
@@ -100,15 +102,39 @@ int main(int argc, char* argv[])
                 done = true;
             }
 	    /* Add support for other commands here */
-
-
-
-
+            else if ( cmd == "ADD") {
+              string username;
+              unsigned int hit_result_index;
+              if (ss >> username) {
+                  if (ss >> hit_result_index) {
+                      if (hits.size() >= hit_result_index) {
+                          ds.addtoCart(username, hits[hit_result_index-1]);
+                      }												
+                      else {
+                          std::cout << "Invalid request" << std::endl;
+											}
+                  }
+                  else { 
+                      std::cout << "Invalid request" << std::endl;
+                }
+              }
+            }
+            else if ( cmd == "VIEWCART") {
+                string username;
+                if (ss >> username) {
+                  ds.viewCart(username);
+                }
+            }
+            else if ( cmd == "BUYCART") {
+                string username;
+                if (ss >> username) {
+                  ds.buyCart(username);
+                }
+            }
             else {
-                cout << "Unknown command" << endl;
+                std::cout << "Unknown command" << endl;
             }
         }
-
     }
     return 0;
 }
